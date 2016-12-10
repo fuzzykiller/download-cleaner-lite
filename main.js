@@ -62,7 +62,7 @@ function clearAllDownloads() {
   Downloads.search({}).then(removeDownloads);
 }
 
-// Create removal timer for finished downloads
+// Create removal timer for finished/aborted downloads
 function onDownloadChanged(downloadItem) {
   if (downloadItem.state === Downloads.State.in_progress) {
     return;
