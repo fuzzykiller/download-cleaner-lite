@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-let inputField = document.getElementById("delayInput");
+const inputField = document.getElementById("delayInput");
 const settingsKey = "removalDelayInMinutes";
 
 inputField.addEventListener("change", () => {
