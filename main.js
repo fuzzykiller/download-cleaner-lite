@@ -53,7 +53,6 @@ function storageChanged(changes, area) {
   }
 
   removalDelayInMinutes = +changes[settingsKey].newValue;
-  console.log(removalDelayInMinutes);
 }
 
 // Get all downloads and pass them to removal method
