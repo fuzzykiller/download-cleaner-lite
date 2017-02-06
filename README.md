@@ -4,4 +4,6 @@ A new version of the [Download Cleaner extension](https://github.com/fuzzykiller
 
 ## Notes
 
-Because there is no way to detect when the browser closes, only on-demand and removal after finishing a download are working right now.
+Because there is no way to detect when the browser closes, only removal after finishing a download is working right now.
+
+On-demand removal was removed because it doesn’t work after restarting the browser.
