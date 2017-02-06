@@ -59,10 +59,6 @@ function onDownloadChanged(downloadItem) {
     return;
   }
 
-  if (removalDelayInMinutes === 0) {
-    return;
-  }
-
   Alarms.create(JSON.stringify(downloadItem.id), {delayInMinutes: removalDelayInMinutes});
 }
 
