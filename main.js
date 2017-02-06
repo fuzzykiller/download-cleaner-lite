@@ -53,12 +53,9 @@ function storageChanged(changes, area) {
   removalDelayInMinutes = +changes[settingsKey].newValue;
 }
 
-// Create removal timer for finished/aborted downloads
-function onDownloadChanged(downloadItem) {
-  if (downloadItem.state === Downloads.State.in_progress) {
-    return;
-  }
-
+// Create removal timer for downloads
+function onDownloadChanged(downloadItem) {  
+  // Re-schedule removal on each change; work around event not firing on short downloads
   Alarms.create(JSON.stringify(downloadItem.id), {delayInMinutes: removalDelayInMinutes});
 }
 
