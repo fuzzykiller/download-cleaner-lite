@@ -21,14 +21,6 @@
     "alarms"
   ],
 
-  "browser_action": {
-    "default_title": "Clear downloads",
-    "default_icon": {
-      "48": "Icon48.png",
-      "64": "Icon64.png"
-    }
-  },
-
   "options_ui": {
     "page": "options.html"
   },

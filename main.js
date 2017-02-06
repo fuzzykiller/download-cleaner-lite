@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Daniel Betz
+Copyright 2017 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const BrowserAction = browser.browserAction;
 const Downloads = browser.downloads;
 const History = browser.history;
 const Alarms = browser.alarms;
@@ -27,7 +26,6 @@ let removalDelayInMinutes = defaultValues[settingsKey];
 
 // Initialize extension
 function main() {
-  BrowserAction.onClicked.addListener(clearAllDownloads);
   Downloads.onCreated.addListener(onDownloadChanged);
   Downloads.onChanged.addListener(onDownloadChanged);
   Alarms.onAlarm.addListener(onAlarm);
@@ -53,12 +51,6 @@ function storageChanged(changes, area) {
   }
 
   removalDelayInMinutes = +changes[settingsKey].newValue;
-}
-
-// Get all downloads and pass them to removal method
-// Due to query limitations, this also includes in-progress downloads
-function clearAllDownloads() {
-  Downloads.search({}).then(removeDownloads);
 }
 
 // Create removal timer for finished/aborted downloads
