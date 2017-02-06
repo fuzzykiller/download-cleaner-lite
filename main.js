@@ -69,7 +69,7 @@ function onAlarm(alarm) {
 function removeDownloads(downloads) {
   for (let download of downloads) {
     // Skip in-progress downloads
-    if (download.state === Downloads.State.in_progress) {
+    if (download.state === Downloads.State.IN_PROGRESS) {
       continue;
     }
 
