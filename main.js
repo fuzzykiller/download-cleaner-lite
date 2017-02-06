@@ -20,9 +20,7 @@ const Alarms = browser.alarms;
 const Storage = browser.storage;
 
 const settingsKey = "removalDelayInMinutes";
-const defaultValues = {};
-defaultValues[settingsKey] = 1;
-let removalDelayInMinutes = defaultValues[settingsKey];
+let removalDelayInMinutes = 1
 
 // Initialize extension
 function main() {
@@ -39,7 +37,9 @@ function ensureSettings() {
     if (result[settingsKey] != null) {
       removalDelayInMinutes = +result[settingsKey];
     } else {
-       Storage.local.set(defaultValues);
+      const values = {};
+      values[settingsKey] = 1;      
+      Storage.local.set(values);
     }
   });
 }
