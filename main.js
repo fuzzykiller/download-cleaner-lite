@@ -31,6 +31,7 @@ limitations under the License.
 
   // Add download to startup removal list
   function registerStartupRemoval(url) {
+    if (url == null) return;
     if (url in downloadsToRemove) return;
     
     downloadsToRemove[url] = true;
