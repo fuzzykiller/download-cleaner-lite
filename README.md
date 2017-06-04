@@ -4,6 +4,6 @@ A new version of the [Download Cleaner extension](https://github.com/fuzzykiller
 
 ## Notes
 
-Because there is no way to detect when the browser closes, only removal after finishing a download is working right now.
+Because there is no way to detect when the browser closes, the “remove when closing” option has been replaced with a “remove when starting” option. Thanks for the idea, @CodingMarkus!
 
 On-demand removal was removed because it doesn’t work after restarting the browser.
