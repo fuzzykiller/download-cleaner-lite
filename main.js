@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/* eslint-disable no-unused-vars */
+/* global keyValuePair:false, settings:false, loadSettings:false, removeAtStartupKey:false, removeAfterDelayKey:false, removalDelayKey:false */
+/* eslint-enable no-unused-vars */
+
 (function () {
   "use strict";
 
