@@ -7,4 +7,5 @@ zip download-cleaner-lite.zip \
   main.js \
   manifest.json \
   options.html \
-  options.js
+  options.js \
+  lib/options.js

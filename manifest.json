@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Download Cleaner Lite",
-  "description": "Automatically removes downloads from history after a set time.",
+  "description": "Automatically removes downloads from history.",
   "icons": {
     "48": "Icon48.png",
     "64": "Icon64.png"
@@ -11,7 +11,10 @@
   "version": "1.2",
 
   "background": {
-    "scripts": ["main.js"]
+    "scripts": [
+      "lib/options.js",
+      "main.js"
+    ]
   },
 
   "permissions": [

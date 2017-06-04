@@ -14,72 +14,96 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const Downloads = browser.downloads;
-const History = browser.history;
-const Alarms = browser.alarms;
-const Storage = browser.storage;
+(function () {
+  "use strict";
 
-const settingsKey = "removalDelayInMinutes";
-let removalDelayInMinutes = 1
+  const Downloads = browser.downloads;
+  const History = browser.history;
+  const Alarms = browser.alarms;
+  const Storage = browser.storage;
 
-// Initialize extension
-function main() {
-  Downloads.onCreated.addListener(onDownloadChanged);
-  Downloads.onChanged.addListener(onDownloadChanged);
-  Alarms.onAlarm.addListener(onAlarm);
-  Storage.onChanged.addListener(storageChanged);
-  ensureSettings();
-}
+  const downloadsToRemoveKey = "downloadsToRemove";
+  const downloadsToRemove = {};
 
-// Create `settingsKey` in local storage if it doesn’t exist
-function ensureSettings() {
-  Storage.local.get(settingsKey).then(result => {
-    if (result[settingsKey] != null) {
-      removalDelayInMinutes = +result[settingsKey];
-    } else {
-      const values = {};
-      values[settingsKey] = 1;      
-      Storage.local.set(values);
-    }
-  });
-}
-
-// When `settingsKey` in local storage changed, get its new value
-function storageChanged(changes, area) {
-  if (area !== "local" || !changes.hasOwnProperty(settingsKey)) {
-    return;
+  // Add download to startup removal list
+  function registerStartupRemoval(url) {
+    if (url in downloadsToRemove) return;
+    
+    downloadsToRemove[url] = true;
+    const removalList = JSON.stringify(Object.keys(downloadsToRemove));
+    Storage.local.set(keyValuePair(downloadsToRemoveKey, removalList));
   }
 
-  removalDelayInMinutes = +changes[settingsKey].newValue;
-}
+  // Remove download from startup removal list
+  function unregisterStartupRemoval(url) {
+    delete downloadsToRemove[url];
+    const removalList = JSON.stringify(Object.keys(downloadsToRemove));
+    Storage.local.set(keyValuePair(downloadsToRemoveKey, removalList));
+  }
 
-// Create removal timer for downloads
-function onDownloadChanged(downloadItem) {  
-  // Re-schedule removal on each change; work around event not firing on short downloads
-  Alarms.create(JSON.stringify(downloadItem.id), {delayInMinutes: removalDelayInMinutes});
-}
+  // Initialize extension
+  function main() {
+    Downloads.onCreated.addListener(onDownloadChanged);
+    Downloads.onChanged.addListener(onDownloadChanged);
+    Alarms.onAlarm.addListener(onAlarm);
+    loadSettings().then(result => {
+      if (downloadsToRemoveKey in result) {
+        const urls = JSON.parse(result[downloadsToRemoveKey]);
+        if (settings.removeAtStartup)
+        {
+          removeHistoryEntries(urls);
+        }
+        
+        Storage.local.set(keyValuePair(downloadsToRemoveKey, "[]"));
+      }
+    });
+  }
 
-// Call removal method when timer elapses
-function onAlarm(alarm) {
-  let downloadId = JSON.parse(alarm.name);
-  Downloads.search({id: downloadId}).then(removeDownloads);
-}
+  // Create removal timer/removal pending entry for downloads
+  function onDownloadChanged(downloadItem) {  
+    // Re-schedule removal on each change; work around event not firing on short downloads
+    Alarms.create(JSON.stringify(downloadItem.id), {delayInMinutes: settings.removalDelayInMinutes});
+    registerStartupRemoval(downloadItem.url);
+  }
 
-// Fully remove passed array of `Downloads.DownloadItem` from history
-function removeDownloads(downloads) {
-  for (let download of downloads) {
-    // Skip in-progress downloads
-    if (download.state === Downloads.State.IN_PROGRESS) {
-      continue;
-    }
+  // Call removal method when timer elapses
+  function onAlarm(alarm) {
+    let downloadId = JSON.parse(alarm.name);
+    Downloads.search({id: downloadId}).then(removeDownloads);
+  }
 
-    try {
-      History.deleteUrl({url: download.url});
-      Downloads.erase({id: download.id});
-    } catch (ex) {
-      // Ignore errors, continue iterating
+  // Fully remove passed array of `Downloads.DownloadItem` from history
+  function removeDownloads(downloads) {
+    if (!settings.removeAfterDelay) return;
+    
+    for (let download of downloads) {
+      // Skip in-progress downloads
+      if (download.state === Downloads.State.IN_PROGRESS) {
+        continue;
+      }
+      
+      unregisterStartupRemoval(download.url);
+
+      try {
+        History.deleteUrl({url: download.url});
+        Downloads.erase({id: download.id});
+      } catch (ex) {
+        // Ignore errors, continue iterating
+      }
     }
   }
-}
 
-main();
+  function removeHistoryEntries(urls) {
+    for (let url of urls) {
+      try {
+        History.deleteUrl({url: url});
+      } catch (ex) {
+        // Ignore errors, continue iterating
+      }
+    }
+  }
+
+  main();
+})();
+
+

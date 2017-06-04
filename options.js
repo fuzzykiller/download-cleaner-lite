@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Daniel Betz
+Copyright 2017 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +14,58 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const inputField = document.getElementById("delayInput");
-const settingsKey = "removalDelayInMinutes";
 
-inputField.addEventListener("change", () => {
-  const obj = {};
-  if ((obj[settingsKey] = +inputField.value) < 1) {
-    return;
+(function () {
+  "use strict";
+  const delayInputLabel = document.getElementById("delayInputLabel");
+  const delayInputField = document.getElementById("delayInput");
+  const delayEnabledCheckbox = document.getElementById("delayEnabledInput");
+  const removeAtStartEnabledCheckbox = document.getElementById("removeAtStartEnabledInput");
+
+  let settingsChanging = false;
+
+  delayInputField.addEventListener("change", () => {
+    if (settingsChanging) return;
+
+    if (+delayInputField.value < 1) {
+      return;
+    }
+
+    browser.storage.local.set(
+      keyValuePair(removalDelayKey, JSON.stringify(+delayInputField.value)));
+    
+    //onSettingsChanged();
+  }, false);
+
+  delayEnabledCheckbox.addEventListener("change", () => {
+    if (settingsChanging) return;
+
+    browser.storage.local.set(
+      keyValuePair(removeAfterDelayKey, JSON.stringify(delayEnabledCheckbox.checked)));
+
+    //onSettingsChanged();
+  }, false);
+
+  removeAtStartEnabledCheckbox.addEventListener("change", () => {
+    if (settingsChanging) return;
+
+    browser.storage.local.set(
+      keyValuePair(removeAtStartupKey, JSON.stringify(removeAtStartEnabledCheckbox.checked)));
+
+    //onSettingsChanged();
+  }, false);
+
+  function onSettingsChanged() {
+    settingsChanging = true;
+    delayInputField.value = settings.removalDelayInMinutes;
+    delayEnabledCheckbox.checked = settings.removeAfterDelay;
+    removeAtStartEnabledCheckbox.checked = settings.removeAtStartup;
+
+    delayInputField.disabled = !settings.removeAfterDelay;
+    delayInputLabel.className = !settings.removeAfterDelay ? "disabled" : "";
+    settingsChanging = false;
   }
 
-  browser.storage.local.set(obj);
-}, false);
-
-browser.storage.local.get(settingsKey).then(result => {
-  inputField.value = result[settingsKey]
-});
+  loadSettings(() => onSettingsChanged())
+    .then(() => onSettingsChanged());
+})();
