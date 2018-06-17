@@ -14,25 +14,73 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+interface IDownloadInfo {
+  url: string;
+  time: number;
+}
+
 (function () {
   const downloadsToRemoveKey = "downloadsToRemove";
-  const downloadsToRemove = new Set<string>();
+  const trackedDownloadsByUrl = new Map<string, IDownloadInfo>();
+  const trackedDownloadsById = new Map<number, IDownloadInfo>();
 
-  /** Add download to startup removal list */
-  function registerStartupRemoval(url: string) {
-    if (!url) return;
-    if (downloadsToRemove.has(url)) return;
-    
-    downloadsToRemove.add(url);
-    const removalList = JSON.stringify(Array.from(downloadsToRemove));
-    browser.storage.local.set(keyValuePair(downloadsToRemoveKey, removalList));
+  /** Add or update tracked download */
+  function addOrUpdateTrackedDownload(id: number, url?: string): void;
+  function addOrUpdateTrackedDownload(url: string): void;
+  function addOrUpdateTrackedDownload(idOrUrl: number | string, url?: string) {
+    let entry: IDownloadInfo;
+    if (typeof idOrUrl === "number") {
+      const trackedDownload = trackedDownloadsById.get(idOrUrl);
+      if (trackedDownload) {
+        // Known download by id
+        entry = trackedDownload;
+
+        if (typeof url === "string") {
+          // URL changed, update tracking
+          trackedDownloadsByUrl.delete(entry.url);
+          entry.url = url;
+          trackedDownloadsByUrl.set(url, entry);
+        }
+      } else if (typeof url === "string") {
+        // New download by id, begin tracking
+        entry = { url: url, time: 0 };
+        trackedDownloadsById.set(idOrUrl, entry);
+        trackedDownloadsByUrl.set(url, entry);
+      } else {
+        // Unknown download by id, URL missing, abort
+        return;
+      }
+    } else {
+      let trackedDownload = trackedDownloadsByUrl.get(idOrUrl);
+      if (!trackedDownload) {
+        trackedDownload = { url: idOrUrl, time: 0 };
+        trackedDownloadsByUrl.set(idOrUrl, trackedDownload);
+      }
+
+      entry = trackedDownload;
+    }
+
+    entry.time = Date.now();
+
+    trackedDownloadsByUrl.set(entry.url, entry);
+    updateTrackedDownloadsStore();
   }
 
-  /** Remove download from startup removal list */
-  function unregisterStartupRemoval(url: string) {
-    downloadsToRemove.delete(url);
-    const removalList = JSON.stringify(Array.from(downloadsToRemove));
-    browser.storage.local.set(keyValuePair(downloadsToRemoveKey, removalList));
+  /** Remove download from list of tracked downloads */
+  function removeTrackedDownload(url: string, id?: number) {
+    trackedDownloadsByUrl.delete(url);
+
+    if (id !== undefined) {
+      trackedDownloadsById.delete(id);
+    }
+
+    updateTrackedDownloadsStore();
+  }
+
+  /** Update tracked downloads on local storage */
+  function updateTrackedDownloadsStore() {
+    const serializedList = JSON.stringify(Array.from(trackedDownloadsByUrl.values()));
+    browser.storage.local.set(keyValuePair(downloadsToRemoveKey, serializedList));
   }
 
   /** Initialize extension */
@@ -43,49 +91,49 @@ limitations under the License.
     loadSettings().then(result => {
       const downloadsToRemoveString = result[downloadsToRemoveKey];
       if (typeof downloadsToRemoveString === "string") {
-        const urls = JSON.parse(downloadsToRemoveString) as string[];
-        if (settings.removeAtStartup)
-        {
-          removeHistoryEntries(urls);
+        const downloadInfos = JSON.parse(downloadsToRemoveString) as IDownloadInfo[];
+        if (settings.removeAtStartup) {
+          removeHistoryEntries(downloadInfos.map(x => x.url));
         }
-        
+
         browser.storage.local.set(keyValuePair(downloadsToRemoveKey, "[]"));
       }
     });
   }
 
   /** Create removal timer/registration for new downloads */
-  function onDownloadCreated(downloadItem: browser.downloads.DownloadItem){
-    browser.alarms.create(JSON.stringify(downloadItem.id), {delayInMinutes: settings.removalDelayInMinutes});
-    registerStartupRemoval(downloadItem.url);
+  function onDownloadCreated(downloadItem: browser.downloads.DownloadItem) {
+    browser.alarms.create(JSON.stringify(downloadItem.id), { delayInMinutes: settings.removalDelayInMinutes });
+    addOrUpdateTrackedDownload(downloadItem.id, downloadItem.url);
   }
 
-  /** Delay removal timer for changing downloads; work around event not firing on short downloads */
-  function onDownloadChanged(downloadItem: {id: number}) {  
-    browser.alarms.create(JSON.stringify(downloadItem.id), {delayInMinutes: settings.removalDelayInMinutes});
+  /** Delay removal timer for changing downloads; work around events not firing on short downloads */
+  function onDownloadChanged(downloadItem: { id: number, url?: browser.downloads.StringDelta }) {
+    browser.alarms.create(JSON.stringify(downloadItem.id), { delayInMinutes: settings.removalDelayInMinutes });
+    addOrUpdateTrackedDownload(downloadItem.id, downloadItem.url && downloadItem.url.current);
   }
 
   /** Call removal method when timer elapses */
   function onAlarm(alarm: browser.alarms.Alarm) {
     let downloadId = JSON.parse(alarm.name);
-    browser.downloads.search({id: downloadId}).then(removeDownloads);
+    browser.downloads.search({ id: downloadId }).then(removeDownloads);
   }
 
   /** Fully remove passed array of `Downloads.DownloadItem` from history */
   function removeDownloads(downloads: browser.downloads.DownloadItem[]) {
     if (!settings.removeAfterDelay) return;
-    
+
     for (let download of downloads) {
       // Skip in-progress downloads
       if (download.state === "in_progress") {
         continue;
       }
-      
-      unregisterStartupRemoval(download.url);
+
+      removeTrackedDownload(download.url, download.id);
 
       try {
-        browser.history.deleteUrl({url: download.url});
-        browser.downloads.erase({id: download.id});
+        browser.history.deleteUrl({ url: download.url });
+        browser.downloads.erase({ id: download.id });
       } catch (ex) {
         // Ignore errors, continue iterating
       }
@@ -96,7 +144,7 @@ limitations under the License.
   function removeHistoryEntries(urls: string[]) {
     for (let url of urls) {
       try {
-        browser.history.deleteUrl({url: url});
+        browser.history.deleteUrl({ url: url });
       } catch (ex) {
         // Ignore errors, continue iterating
       }
