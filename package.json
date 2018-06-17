@@ -1,0 +1,9 @@
+{
+  "name": "download-cleaner-lite",
+  "version": "0.0.1",
+  "private": true,
+  "devDependencies": {
+    "typescript": "^2.9.2",
+    "web-ext-types": "^2.1.0"
+  }
+}

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Daniel Betz
+Copyright 2018 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/* eslint-disable no-unused-vars */
-/* global keyValuePair:false, settings:false, loadSettings:false, removeAtStartupKey:false, removeAfterDelayKey:false, removalDelayKey:false */
-/* eslint-enable no-unused-vars */
-
 (function () {
-  "use strict";
-  const delayInputLabel = document.getElementById("delayInputLabel");
-  const delayInputField = document.getElementById("delayInput");
-  const delayEnabledCheckbox = document.getElementById("delayEnabledInput");
-  const removeAtStartEnabledCheckbox = document.getElementById("removeAtStartEnabledInput");
+  const delayInputLabel = document.getElementById("delayInputLabel") as HTMLLabelElement;
+  const delayInputField = document.getElementById("delayInput") as HTMLInputElement;
+  const delayEnabledCheckbox = document.getElementById("delayEnabledInput") as HTMLInputElement;
+  const removeAtStartEnabledCheckbox = document.getElementById("removeAtStartEnabledInput") as HTMLInputElement;
 
   let settingsChanging = false;
 
@@ -36,8 +31,6 @@ limitations under the License.
 
     browser.storage.local.set(
       keyValuePair(removalDelayKey, JSON.stringify(+delayInputField.value)));
-    
-    //onSettingsChanged();
   }, false);
 
   delayEnabledCheckbox.addEventListener("change", () => {
@@ -45,8 +38,6 @@ limitations under the License.
 
     browser.storage.local.set(
       keyValuePair(removeAfterDelayKey, JSON.stringify(delayEnabledCheckbox.checked)));
-
-    //onSettingsChanged();
   }, false);
 
   removeAtStartEnabledCheckbox.addEventListener("change", () => {
@@ -54,13 +45,11 @@ limitations under the License.
 
     browser.storage.local.set(
       keyValuePair(removeAtStartupKey, JSON.stringify(removeAtStartEnabledCheckbox.checked)));
-
-    //onSettingsChanged();
   }, false);
 
   function onSettingsChanged() {
     settingsChanging = true;
-    delayInputField.value = settings.removalDelayInMinutes;
+    delayInputField.value = `${settings.removalDelayInMinutes}`;
     delayEnabledCheckbox.checked = settings.removeAfterDelay;
     removeAtStartEnabledCheckbox.checked = settings.removeAtStartup;
 
@@ -69,6 +58,5 @@ limitations under the License.
     settingsChanging = false;
   }
 
-  loadSettings(() => onSettingsChanged())
-    .then(() => onSettingsChanged());
+  loadSettings(onSettingsChanged).then(onSettingsChanged);
 })();

@@ -1,1 +1,3 @@
 download-cleaner-lite.zip
+node_modules/
+*.js
