@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-(function () {
+(() => {
   const delayInputLabel = document.getElementById("delayInputLabel") as HTMLLabelElement;
   const delayInputField = document.getElementById("delayInput") as HTMLInputElement;
   const delayEnabledCheckbox = document.getElementById("delayEnabledInput") as HTMLInputElement;
@@ -23,7 +23,7 @@ limitations under the License.
   let settingsChanging = false;
 
   delayInputField.addEventListener("change", () => {
-    if (settingsChanging) return;
+    if (settingsChanging) { return; }
 
     if (+delayInputField.value < 1) {
       return;
@@ -34,14 +34,14 @@ limitations under the License.
   }, false);
 
   delayEnabledCheckbox.addEventListener("change", () => {
-    if (settingsChanging) return;
+    if (settingsChanging) { return; }
 
     browser.storage.local.set(
       keyValuePair(removeAfterDelayKey, JSON.stringify(delayEnabledCheckbox.checked)));
   }, false);
 
   removeAtStartEnabledCheckbox.addEventListener("change", () => {
-    if (settingsChanging) return;
+    if (settingsChanging) { return; }
 
     browser.storage.local.set(
       keyValuePair(removeAtStartupKey, JSON.stringify(removeAtStartEnabledCheckbox.checked)));

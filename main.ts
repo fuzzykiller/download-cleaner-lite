@@ -19,7 +19,7 @@ interface IDownloadInfo {
   time: number;
 }
 
-(function () {
+(() => {
   const downloadsToRemoveKey = "downloadsToRemove";
   const trackedDownloadsByUrl = new Map<string, IDownloadInfo>();
   const trackedDownloadsById = new Map<number, IDownloadInfo>();
@@ -43,7 +43,7 @@ interface IDownloadInfo {
         }
       } else if (typeof url === "string") {
         // New download by id, begin tracking
-        entry = { url: url, time: 0 };
+        entry = { url, time: 0 };
         trackedDownloadsById.set(idOrUrl, entry);
         trackedDownloadsByUrl.set(url, entry);
       } else {
@@ -88,12 +88,12 @@ interface IDownloadInfo {
     browser.downloads.onCreated.addListener(onDownloadCreated);
     browser.downloads.onChanged.addListener(onDownloadChanged);
     browser.alarms.onAlarm.addListener(onAlarm);
-    loadSettings().then(result => {
+    loadSettings().then((result) => {
       const downloadsToRemoveString = result[downloadsToRemoveKey];
       if (typeof downloadsToRemoveString === "string") {
         const downloadInfos = JSON.parse(downloadsToRemoveString) as IDownloadInfo[];
         if (settings.removeAtStartup) {
-          removeHistoryEntries(downloadInfos.map(x => x.url));
+          removeHistoryEntries(downloadInfos.map((x) => x.url));
         }
 
         browser.storage.local.set(keyValuePair(downloadsToRemoveKey, "[]"));
@@ -115,15 +115,15 @@ interface IDownloadInfo {
 
   /** Call removal method when timer elapses */
   function onAlarm(alarm: browser.alarms.Alarm) {
-    let downloadId = JSON.parse(alarm.name);
+    const downloadId = JSON.parse(alarm.name);
     browser.downloads.search({ id: downloadId }).then(removeDownloads);
   }
 
   /** Fully remove passed array of `Downloads.DownloadItem` from history */
   function removeDownloads(downloads: browser.downloads.DownloadItem[]) {
-    if (!settings.removeAfterDelay) return;
+    if (!settings.removeAfterDelay) { return; }
 
-    for (let download of downloads) {
+    for (const download of downloads) {
       // Skip in-progress downloads
       if (download.state === "in_progress") {
         continue;
@@ -142,9 +142,9 @@ interface IDownloadInfo {
 
   /** Remove URLs from history */
   function removeHistoryEntries(urls: string[]) {
-    for (let url of urls) {
+    for (const url of urls) {
       try {
-        browser.history.deleteUrl({ url: url });
+        browser.history.deleteUrl({ url });
       } catch (ex) {
         // Ignore errors, continue iterating
       }
@@ -153,5 +153,3 @@ interface IDownloadInfo {
 
   main();
 })();
-
-

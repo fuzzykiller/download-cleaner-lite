@@ -19,9 +19,9 @@ const removeAfterDelayKey = "removeAfterDelay";
 const removalDelayKey = "removalDelayInMinutes";
 
 const settings = {
-  "removeAtStartup": false,
-  "removeAfterDelay": true,
-  "removalDelayInMinutes": 1
+  removalDelayInMinutes: 1,
+  removeAfterDelay: true,
+  removeAtStartup: false,
 };
 
 type Settings = typeof settings;
@@ -40,9 +40,9 @@ function loadSettings(changedCallback?: () => void) {
   let settingsChangedCallback: (() => void) | undefined;
 
   function storageChanged(changes: browser.storage.ChangeDict, area: browser.storage.StorageName) {
-    if (area !== "local") return;
+    if (area !== "local") { return; }
 
-    for (let key of settingsKeys) {
+    for (const key of settingsKeys) {
       if (key in changes) {
         settings[key] = JSON.parse(changes[key].newValue);
       }
@@ -57,8 +57,8 @@ function loadSettings(changedCallback?: () => void) {
   browser.storage.onChanged.removeListener(storageChanged);
   browser.storage.onChanged.addListener(storageChanged);
 
-  return browser.storage.local.get().then(result => {
-    for (let key of settingsKeys) {
+  return browser.storage.local.get().then((result) => {
+    for (const key of settingsKeys) {
       const value = result[key];
       if (typeof value === "string") {
         settings[key] = JSON.parse(value);
@@ -70,4 +70,4 @@ function loadSettings(changedCallback?: () => void) {
 
     return result;
   });
-};
+}
