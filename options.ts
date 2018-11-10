@@ -19,6 +19,7 @@ limitations under the License.
   const delayInputField = document.getElementById("delayInput") as HTMLInputElement;
   const delayEnabledCheckbox = document.getElementById("delayEnabledInput") as HTMLInputElement;
   const removeAtStartEnabledCheckbox = document.getElementById("removeAtStartEnabledInput") as HTMLInputElement;
+  const removeInterruptedEnabledCheckbox = document.getElementById("removeInterruptedEnabledInput") as HTMLInputElement;
 
   let settingsChanging = false;
 
@@ -47,11 +48,19 @@ limitations under the License.
       keyValuePair(removeAtStartupKey, JSON.stringify(removeAtStartEnabledCheckbox.checked)));
   }, false);
 
+  removeInterruptedEnabledCheckbox.addEventListener("change", () => {
+    if (settingsChanging) { return; }
+
+    browser.storage.local.set(
+      keyValuePair(removeInterruptedKey, JSON.stringify(removeInterruptedEnabledCheckbox.checked)));
+  }, false);
+
   function onSettingsChanged() {
     settingsChanging = true;
     delayInputField.value = `${settings.removalDelayInMinutes}`;
     delayEnabledCheckbox.checked = settings.removeAfterDelay;
     removeAtStartEnabledCheckbox.checked = settings.removeAtStartup;
+    removeInterruptedEnabledCheckbox.checked = settings.removeInterrupted;
 
     delayInputField.disabled = !settings.removeAfterDelay;
     delayInputLabel.className = !settings.removeAfterDelay ? "disabled" : "";

@@ -124,8 +124,18 @@ interface IDownloadInfo {
     if (!settings.removeAfterDelay) { return; }
 
     for (const download of downloads) {
-      // Skip in-progress downloads
-      if (download.state === "in_progress") {
+      // Always skip paused downloads
+      if (download.paused) {
+        continue;
+      }
+
+      // Always skip non-interrupted non-complete downloads
+      if (download.state !== "interrupted" && download.state !== "complete") {
+        continue;
+      }
+
+      // Skip interrupted downloads unless option enabled
+      if (download.state === "interrupted" && !settings.removeInterrupted) {
         continue;
       }
 

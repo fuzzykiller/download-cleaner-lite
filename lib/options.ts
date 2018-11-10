@@ -17,11 +17,13 @@ limitations under the License.
 const removeAtStartupKey = "removeAtStartup";
 const removeAfterDelayKey = "removeAfterDelay";
 const removalDelayKey = "removalDelayInMinutes";
+const removeInterruptedKey = "removeInterrupted";
 
 const settings = {
   removalDelayInMinutes: 1,
   removeAfterDelay: true,
   removeAtStartup: false,
+  removeInterrupted: true,
 };
 
 type Settings = typeof settings;
