@@ -16,6 +16,8 @@ limitations under the License.
 
 interface IDownloadInfo {
   url: string;
+
+  /** Last change; UNIX time (milliseconds) */
   time: number;
 }
 
@@ -94,29 +96,65 @@ interface IDownloadInfo {
         const downloadInfos = JSON.parse(downloadsToRemoveString) as IDownloadInfo[];
         if (settings.removeAtStartup) {
           removeHistoryEntries(downloadInfos.map((x) => x.url));
+          browser.storage.local.remove(downloadsToRemoveKey);
+        } else if (settings.removeAfterDelay) {
+          reregisterOldDownloads(downloadInfos);
+        } else {
+          browser.storage.local.remove(downloadsToRemoveKey);
         }
-
-        browser.storage.local.set(keyValuePair(downloadsToRemoveKey, "[]"));
       }
     });
   }
 
+  /** Create removal timers for downloads from previous sessions */
+  function reregisterOldDownloads(downloads: IDownloadInfo[]) {
+    const removalDelayInMilliseconds = (settings.removalDelayInMinutes * 60000);
+    const now = Date.now();
+
+    const urlsToRemove: string[] = [];
+
+    for (const download of downloads) {
+      const dueTime = download.time + removalDelayInMilliseconds;
+      if (dueTime < now) {
+        // Already due
+        urlsToRemove.push(download.url);
+      } else {
+        // Due in future
+        const minutesUntilDue = (dueTime - now) / 60000;
+        trackedDownloadsByUrl.set(download.url, download);
+        browser.alarms.create(`url-${download.url}`, { delayInMinutes: minutesUntilDue });
+      }
+    }
+
+    // Remove downloads due for removal now or in the past
+    removeHistoryEntries(urlsToRemove);
+
+    updateTrackedDownloadsStore();
+  }
+
   /** Create removal timer/registration for new downloads */
   function onDownloadCreated({ id, url }: browser.downloads.DownloadItem) {
-    browser.alarms.create(JSON.stringify(id), { delayInMinutes: settings.removalDelayInMinutes });
+    browser.alarms.create(`id-${id}`, { delayInMinutes: settings.removalDelayInMinutes });
     addOrUpdateTrackedDownload(id, url);
   }
 
   /** Delay removal timer for changing downloads; work around events not firing on short downloads */
   function onDownloadChanged({ id, url }: { id: number, url?: browser.downloads.StringDelta }) {
-    browser.alarms.create(JSON.stringify(id), { delayInMinutes: settings.removalDelayInMinutes });
+    browser.alarms.create(`id-${id}`, { delayInMinutes: settings.removalDelayInMinutes });
     addOrUpdateTrackedDownload(id, url && url.current);
   }
 
   /** Call removal method when timer elapses */
   function onAlarm(alarm: browser.alarms.Alarm) {
-    const downloadId = JSON.parse(alarm.name);
-    browser.downloads.search({ id: downloadId }).then(removeDownloads);
+    if (alarm.name.startsWith("id-")) {
+      // Download from current session with ID
+      const downloadId = parseInt(alarm.name.substring(3), 10);
+      browser.downloads.search({ id: downloadId }).then(removeDownloads);
+    } else if (alarm.name.startsWith("url-")) {
+      // Download from previous session, only URL
+      const downloadUrl = alarm.name.substring(4);
+      removeHistoryEntry(downloadUrl);
+    }
   }
 
   /** Fully remove passed array of `Downloads.DownloadItem` from history */
@@ -148,6 +186,12 @@ interface IDownloadInfo {
         // Ignore errors, continue iterating
       }
     }
+  }
+
+  /** Remove single download from history and forget about it */
+  function removeHistoryEntry(url: string) {
+    removeHistoryEntries([ url ]);
+    removeTrackedDownload(url);
   }
 
   /** Remove URLs from history */
