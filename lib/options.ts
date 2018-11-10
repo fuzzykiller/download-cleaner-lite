@@ -27,10 +27,8 @@ const settings = {
 type Settings = typeof settings;
 
 /** Create object with single key, suitable for `Storage.set()` */
-function keyValuePair(key: string, value: string) {
-  const obj: { [key: string]: string } = {};
-  obj[key] = value;
-  return obj;
+function keyValuePair<K extends string>(key: K, value: string): Record<K, string> {
+  return { [key]: value } as Record<K, string>;
 }
 
 /** Load settings and/or set default values */
