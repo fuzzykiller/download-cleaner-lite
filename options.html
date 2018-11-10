@@ -3,15 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Download Cleaner Lite Options</title>
-  <style type="text/css">
-    html, body {
-      margin: 0;
-    }
-
-    body {
-      font: message-box;
-    }
-    
+  <style type="text/css">   
     div {
       margin-bottom: 5px;
     }
@@ -40,15 +32,15 @@
 </head>
 <body>
   <div>
-    <label><input type="checkbox" id="delayEnabledInput"> Remove downloads after a delay.</label>
+    <label class="browser-style"><input type="checkbox" id="delayEnabledInput"> Remove downloads after a delay.</label>
   </div>
   <div class="indented">
-    <label id="delayInputLabel" class="disabled">
+    <label id="delayInputLabel" class="disabled browser-style">
       Remove after <input type="number" min="1" step="any" id="delayInput" size="5" title="1-*"> minutes.
     </label>
   </div>
   <div>
-    <label>
+    <label class="browser-style">
       <input type="checkbox" id="removeAtStartEnabledInput"> Remove downloads when starting Firefox.
     </label>
   </div>
