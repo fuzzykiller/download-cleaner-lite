@@ -102,15 +102,15 @@ interface IDownloadInfo {
   }
 
   /** Create removal timer/registration for new downloads */
-  function onDownloadCreated(downloadItem: browser.downloads.DownloadItem) {
-    browser.alarms.create(JSON.stringify(downloadItem.id), { delayInMinutes: settings.removalDelayInMinutes });
-    addOrUpdateTrackedDownload(downloadItem.id, downloadItem.url);
+  function onDownloadCreated({ id, url }: browser.downloads.DownloadItem) {
+    browser.alarms.create(JSON.stringify(id), { delayInMinutes: settings.removalDelayInMinutes });
+    addOrUpdateTrackedDownload(id, url);
   }
 
   /** Delay removal timer for changing downloads; work around events not firing on short downloads */
-  function onDownloadChanged(downloadItem: { id: number, url?: browser.downloads.StringDelta }) {
-    browser.alarms.create(JSON.stringify(downloadItem.id), { delayInMinutes: settings.removalDelayInMinutes });
-    addOrUpdateTrackedDownload(downloadItem.id, downloadItem.url && downloadItem.url.current);
+  function onDownloadChanged({ id, url }: { id: number, url?: browser.downloads.StringDelta }) {
+    browser.alarms.create(JSON.stringify(id), { delayInMinutes: settings.removalDelayInMinutes });
+    addOrUpdateTrackedDownload(id, url && url.current);
   }
 
   /** Call removal method when timer elapses */
