@@ -1,36 +1,24 @@
 {
   "manifest_version": 2,
 
-  "name": "Download Cleaner Lite",
-  "description": "Automatically removes downloads from history.",
-  "icons": {
-    "48": "Icon48.png",
-    "64": "Icon64.png"
-  },
+  "name": "Firefox Download API Test",
+  "description": "Test a potential regression in Firefox 70.",
 
-  "version": "2.0",
+  "version": "1.0",
 
   "background": {
     "scripts": [
-      "lib/options.js",
       "main.js"
     ]
   },
 
   "permissions": [
-    "downloads",
-    "history",
-    "storage",
-    "alarms"
+    "downloads"
   ],
-
-  "options_ui": {
-    "page": "options.html"
-  },
 
   "applications": {
     "gecko": {
-      "id": "download-cleaner-lite@futuretech.in"
+      "id": "download-api-test@futuretech.in"
     }
   }
 }
