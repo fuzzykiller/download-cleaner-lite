@@ -36,13 +36,9 @@ limitations under the License.
     );
 
   onUserChange(delayInputField, () => {
-    if (+delayInputField.value < 1) {
-      return;
-    }
+    const delay = Math.floor(Math.max(0, +delayInputField.value));
 
-    browser.storage.local.set(
-      kvp(removalDelayKey, JSON.stringify(+delayInputField.value))
-    );
+    browser.storage.local.set(kvp(removalDelayKey, JSON.stringify(delay)));
   });
 
   onUserChange(delayEnabledCheckbox, () => {

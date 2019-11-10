@@ -149,20 +149,27 @@ interface IAlarmName {
 
   /** Create removal timer/registration for new downloads */
   function onDownloadCreated({ id, url }: browser.downloads.DownloadItem) {
-    browser.alarms.create(`id-${id}`, {
-      delayInMinutes: settings.removalDelayInMinutes,
-    });
-
     addOrUpdateTrackedDownload(id, url);
+
+    setOrRaiseAlarm(`id-${id}`);
   }
 
   /** Delay removal timer for changing downloads; work around events not firing on short downloads */
   function onDownloadChanged({ id, url }: IDownloadChange) {
-    browser.alarms.create(`id-${id}`, {
-      delayInMinutes: settings.removalDelayInMinutes,
-    });
+    addOrUpdateTrackedDownload(id, url?.current);
 
-    addOrUpdateTrackedDownload(id, url && url.current);
+    setOrRaiseAlarm(`id-${id}`);
+  }
+
+  /** Set alarm for checking download or raise it right away, if delay is zero */
+  function setOrRaiseAlarm(name: string) {
+    if (settings.removalDelayInMinutes > 0) {
+      browser.alarms.create(name, {
+        delayInMinutes: settings.removalDelayInMinutes,
+      });
+    } else {
+      onAlarm({ name });
+    }
   }
 
   /** Call removal method when timer elapses */
