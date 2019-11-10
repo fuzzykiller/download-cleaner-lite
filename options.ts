@@ -15,89 +15,59 @@ limitations under the License.
 */
 
 (async () => {
-  const delayInputLabel = document.getElementById(
-    "delayInputLabel"
-  ) as HTMLLabelElement;
-  const delayInputField = document.getElementById(
-    "delayInput"
-  ) as HTMLInputElement;
-  const delayEnabledCheckbox = document.getElementById(
-    "delayEnabledInput"
-  ) as HTMLInputElement;
-  const removeAtStartEnabledCheckbox = document.getElementById(
+  const byId = <T extends HTMLElement>(key: string) =>
+    document.getElementById(key) as T;
+
+  const delayInputLabel = byId<HTMLLabelElement>("delayInputLabel");
+  const delayInputField = byId<HTMLInputElement>("delayInput");
+  const delayEnabledCheckbox = byId<HTMLInputElement>("delayEnabledInput");
+  const removeAtStartEnabledCheckbox = byId<HTMLInputElement>(
     "removeAtStartEnabledInput"
-  ) as HTMLInputElement;
-  const removeInterruptedEnabledCheckbox = document.getElementById(
+  );
+  const removeInterruptedEnabledCheckbox = byId<HTMLInputElement>(
     "removeInterruptedEnabledInput"
-  ) as HTMLInputElement;
+  );
 
   let settingsChanging = false;
 
-  delayInputField.addEventListener(
-    "change",
-    () => {
-      if (settingsChanging) {
-        return;
-      }
+  const onUserChange = (el: HTMLElement, handler: () => void) =>
+    el.addEventListener("change", () =>
+      !settingsChanging ? handler() : void 0
+    );
 
-      if (+delayInputField.value < 1) {
-        return;
-      }
+  onUserChange(delayInputField, () => {
+    if (+delayInputField.value < 1) {
+      return;
+    }
 
-      browser.storage.local.set(
-        kvp(removalDelayKey, JSON.stringify(+delayInputField.value))
-      );
-    },
-    false
-  );
+    browser.storage.local.set(
+      kvp(removalDelayKey, JSON.stringify(+delayInputField.value))
+    );
+  });
 
-  delayEnabledCheckbox.addEventListener(
-    "change",
-    () => {
-      if (settingsChanging) {
-        return;
-      }
+  onUserChange(delayEnabledCheckbox, () => {
+    browser.storage.local.set(
+      kvp(removeAfterDelayKey, JSON.stringify(delayEnabledCheckbox.checked))
+    );
+  });
 
-      browser.storage.local.set(
-        kvp(removeAfterDelayKey, JSON.stringify(delayEnabledCheckbox.checked))
-      );
-    },
-    false
-  );
+  onUserChange(removeAtStartEnabledCheckbox, () => {
+    browser.storage.local.set(
+      kvp(
+        removeAtStartupKey,
+        JSON.stringify(removeAtStartEnabledCheckbox.checked)
+      )
+    );
+  });
 
-  removeAtStartEnabledCheckbox.addEventListener(
-    "change",
-    () => {
-      if (settingsChanging) {
-        return;
-      }
-
-      browser.storage.local.set(
-        kvp(
-          removeAtStartupKey,
-          JSON.stringify(removeAtStartEnabledCheckbox.checked)
-        )
-      );
-    },
-    false
-  );
-
-  removeInterruptedEnabledCheckbox.addEventListener(
-    "change",
-    () => {
-      if (settingsChanging) {
-        return;
-      }
-
-      browser.storage.local.set(
-        kvp(
-          removeInterruptedKey,
-          JSON.stringify(removeInterruptedEnabledCheckbox.checked)
-        )
-      );
-    },
-    false
-  );
+  onUserChange(removeInterruptedEnabledCheckbox, () => {
+    browser.storage.local.set(
+      kvp(
+        removeInterruptedKey,
+        JSON.stringify(removeInterruptedEnabledCheckbox.checked)
+      )
+    );
+  });
 
   function onSettingsChanged() {
     settingsChanging = true;
