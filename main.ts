@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Daniel Betz
+Copyright 2019 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -82,28 +82,28 @@ interface IDownloadInfo {
   /** Update tracked downloads on local storage */
   function updateTrackedDownloadsStore() {
     const serializedList = JSON.stringify(Array.from(trackedDownloadsByUrl.values()));
-    browser.storage.local.set(keyValuePair(downloadsToRemoveKey, serializedList));
+    browser.storage.local.set(kvp(downloadsToRemoveKey, serializedList));
   }
 
   /** Initialize extension */
-  function main() {
+  async function main() {
     browser.downloads.onCreated.addListener(onDownloadCreated);
     browser.downloads.onChanged.addListener(onDownloadChanged);
     browser.alarms.onAlarm.addListener(onAlarm);
-    loadSettings().then((result) => {
-      const downloadsToRemoveString = result[downloadsToRemoveKey];
-      if (typeof downloadsToRemoveString === "string") {
-        const downloadInfos = JSON.parse(downloadsToRemoveString) as IDownloadInfo[];
-        if (settings.removeAtStartup) {
-          removeHistoryEntries(downloadInfos.map((x) => x.url));
-          browser.storage.local.remove(downloadsToRemoveKey);
-        } else if (settings.removeAfterDelay) {
-          reregisterOldDownloads(downloadInfos);
-        } else {
-          browser.storage.local.remove(downloadsToRemoveKey);
-        }
+
+    const result = await loadSettings();
+    const downloadsToRemoveString = result[downloadsToRemoveKey];
+    if (typeof downloadsToRemoveString === "string") {
+      const downloadInfos = JSON.parse(downloadsToRemoveString) as IDownloadInfo[];
+      if (settings.removeAtStartup) {
+        removeHistoryEntries(downloadInfos.map((x) => x.url));
+        browser.storage.local.remove(downloadsToRemoveKey);
+      } else if (settings.removeAfterDelay) {
+        reregisterOldDownloads(downloadInfos);
+      } else {
+        browser.storage.local.remove(downloadsToRemoveKey);
       }
-    });
+    }
   }
 
   /** Create removal timers for downloads from previous sessions */
@@ -145,11 +145,12 @@ interface IDownloadInfo {
   }
 
   /** Call removal method when timer elapses */
-  function onAlarm(alarm: browser.alarms.Alarm) {
+  async function onAlarm(alarm: browser.alarms.Alarm) {
     if (alarm.name.startsWith("id-")) {
       // Download from current session with ID
       const downloadId = parseInt(alarm.name.substring(3), 10);
-      browser.downloads.search({ id: downloadId }).then(removeDownloads);
+      const downloads = await browser.downloads.search({ id: downloadId });
+      removeDownloads(downloads);
     } else if (alarm.name.startsWith("url-")) {
       // Download from previous session, only URL
       const downloadUrl = alarm.name.substring(4);

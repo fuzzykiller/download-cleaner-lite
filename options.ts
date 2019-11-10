@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Daniel Betz
+Copyright 2019 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-(() => {
+(async () => {
   const delayInputLabel = document.getElementById("delayInputLabel") as HTMLLabelElement;
   const delayInputField = document.getElementById("delayInput") as HTMLInputElement;
   const delayEnabledCheckbox = document.getElementById("delayEnabledInput") as HTMLInputElement;
@@ -31,28 +31,28 @@ limitations under the License.
     }
 
     browser.storage.local.set(
-      keyValuePair(removalDelayKey, JSON.stringify(+delayInputField.value)));
+      kvp(removalDelayKey, JSON.stringify(+delayInputField.value)));
   }, false);
 
   delayEnabledCheckbox.addEventListener("change", () => {
     if (settingsChanging) { return; }
 
     browser.storage.local.set(
-      keyValuePair(removeAfterDelayKey, JSON.stringify(delayEnabledCheckbox.checked)));
+      kvp(removeAfterDelayKey, JSON.stringify(delayEnabledCheckbox.checked)));
   }, false);
 
   removeAtStartEnabledCheckbox.addEventListener("change", () => {
     if (settingsChanging) { return; }
 
     browser.storage.local.set(
-      keyValuePair(removeAtStartupKey, JSON.stringify(removeAtStartEnabledCheckbox.checked)));
+      kvp(removeAtStartupKey, JSON.stringify(removeAtStartEnabledCheckbox.checked)));
   }, false);
 
   removeInterruptedEnabledCheckbox.addEventListener("change", () => {
     if (settingsChanging) { return; }
 
     browser.storage.local.set(
-      keyValuePair(removeInterruptedKey, JSON.stringify(removeInterruptedEnabledCheckbox.checked)));
+      kvp(removeInterruptedKey, JSON.stringify(removeInterruptedEnabledCheckbox.checked)));
   }, false);
 
   function onSettingsChanged() {
@@ -67,5 +67,6 @@ limitations under the License.
     settingsChanging = false;
   }
 
-  loadSettings(onSettingsChanged).then(onSettingsChanged);
+  await loadSettings(onSettingsChanged);
+  onSettingsChanged();
 })();

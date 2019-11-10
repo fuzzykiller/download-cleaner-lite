@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Daniel Betz
+Copyright 2019 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,45 +29,44 @@ const settings = {
 type Settings = typeof settings;
 
 /** Create object with single key, suitable for `Storage.set()` */
-function keyValuePair<K extends string>(key: K, value: string): Record<K, string> {
+function kvp<K extends string>(key: K, value: string): Record<K, string> {
   return { [key]: value } as Record<K, string>;
 }
 
-/** Load settings and/or set default values */
-function loadSettings(changedCallback?: () => void) {
+/** Load settings and/or set default values
+ *
+ * @returns Raw local storage contents
+ */
+async function loadSettings(changedCallback?: () => void) {
   const settingsKeys = Object.keys(settings) as [keyof Settings];
 
-  let settingsChangedCallback: (() => void) | undefined;
+  function set<K extends keyof Settings>(key: K, value: Settings[K]) {
+    settings[key] = value;
+  }
 
   function storageChanged(changes: browser.storage.ChangeDict, area: browser.storage.StorageName) {
     if (area !== "local") { return; }
 
     for (const key of settingsKeys) {
       if (key in changes) {
-        settings[key] = JSON.parse(changes[key].newValue);
+        set(key, JSON.parse(changes[key].newValue));
       }
     }
 
-    if (settingsChangedCallback != null) {
-      settingsChangedCallback();
-    }
+    changedCallback?.();
   }
 
-  settingsChangedCallback = changedCallback;
   browser.storage.onChanged.removeListener(storageChanged);
   browser.storage.onChanged.addListener(storageChanged);
 
-  return browser.storage.local.get().then((result) => {
-    for (const key of settingsKeys) {
-      const value = result[key];
-      if (typeof value === "string") {
-        settings[key] = JSON.parse(value);
-      } else {
-        browser.storage.local.set(
-          keyValuePair(key, JSON.stringify(settings[key])));
-      }
+  const result = await browser.storage.local.get();
+  for (const key of settingsKeys) {
+    const value = result[key];
+    if (typeof value === "string") {
+      set(key, JSON.parse(value));
+    } else {
+      browser.storage.local.set(kvp(key, JSON.stringify(settings[key])));
     }
-
-    return result;
-  });
+  }
+  return result;
 }
