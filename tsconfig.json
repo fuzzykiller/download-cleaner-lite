@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2015", 
-    "module": "none", 
+    "target": "es2015",
+    "module": "none",
     "lib": ["dom", "dom.iterable", "es2015"],
     "downlevelIteration": true,
     "strict": true,
@@ -9,9 +9,5 @@
 
     "typeRoots": ["node_modules/@types", "node_modules/web-ext-types"]
   },
-  "include": [
-    "lib/options.ts",
-    "main.ts",
-    "options.ts"
-  ]
+  "include": ["lib/options.ts", "main.ts", "options.ts"]
 }

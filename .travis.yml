@@ -4,5 +4,6 @@ node_js:
 install: yarn
 script:
   - yarn lint
+  - yarn lint:format
   - yarn build
 cache: yarn

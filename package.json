@@ -4,11 +4,21 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "lint": "tslint -c tslint.json *.ts lib/*.ts"
+    "lint": "tslint -c tslint.json *.ts lib/*.ts",
+    "lint:format": "prettier --check *.ts lib/*.ts *.html *.json",
+    "format": "prettier --write *.ts lib/*.ts *.html *.json"
   },
   "devDependencies": {
+    "prettier": "1.19.1",
     "tslint": "^5.20.1",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.7.2",
     "web-ext-types": "^3.2.1"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": false
   }
 }

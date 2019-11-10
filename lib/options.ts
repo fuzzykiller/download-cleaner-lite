@@ -44,8 +44,13 @@ async function loadSettings(changedCallback?: () => void) {
     settings[key] = value;
   }
 
-  function storageChanged(changes: browser.storage.ChangeDict, area: browser.storage.StorageName) {
-    if (area !== "local") { return; }
+  function storageChanged(
+    changes: browser.storage.ChangeDict,
+    area: browser.storage.StorageName
+  ) {
+    if (area !== "local") {
+      return;
+    }
 
     for (const key of settingsKeys) {
       if (key in changes) {
