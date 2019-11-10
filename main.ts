@@ -21,6 +21,15 @@ interface IDownloadInfo {
   time: number;
 }
 
+interface IDownloadChange {
+  readonly id: number;
+  readonly url?: browser.downloads.StringDelta;
+}
+
+interface IAlarmName {
+  readonly name: string;
+}
+
 (() => {
   const downloadsToRemoveKey = "downloadsToRemove";
   const trackedDownloadsByUrl = new Map<string, IDownloadInfo>();
@@ -97,7 +106,7 @@ interface IDownloadInfo {
     if (typeof downloadsToRemoveString === "string") {
       const downloadInfos = JSON.parse(
         downloadsToRemoveString
-      ) as IDownloadInfo[];
+      ) as readonly IDownloadInfo[];
 
       if (settings.removeAtStartup) {
         removeHistoryEntries(downloadInfos.map(x => x.url));
@@ -111,7 +120,7 @@ interface IDownloadInfo {
   }
 
   /** Create removal timers for downloads from previous sessions */
-  function reregisterOldDownloads(downloads: IDownloadInfo[]) {
+  function reregisterOldDownloads(downloads: readonly IDownloadInfo[]) {
     const removalDelayInMilliseconds = settings.removalDelayInMinutes * 60000;
     const now = Date.now();
 
@@ -148,13 +157,7 @@ interface IDownloadInfo {
   }
 
   /** Delay removal timer for changing downloads; work around events not firing on short downloads */
-  function onDownloadChanged({
-    id,
-    url,
-  }: {
-    id: number;
-    url?: browser.downloads.StringDelta;
-  }) {
+  function onDownloadChanged({ id, url }: IDownloadChange) {
     browser.alarms.create(`id-${id}`, {
       delayInMinutes: settings.removalDelayInMinutes,
     });
@@ -163,21 +166,23 @@ interface IDownloadInfo {
   }
 
   /** Call removal method when timer elapses */
-  async function onAlarm(alarm: browser.alarms.Alarm) {
-    if (alarm.name.startsWith("id-")) {
+  async function onAlarm({ name }: IAlarmName) {
+    if (name.startsWith("id-")) {
       // Download from current session with ID
-      const downloadId = parseInt(alarm.name.substring(3), 10);
+      const downloadId = parseInt(name.substring(3), 10);
       const downloads = await browser.downloads.search({ id: downloadId });
       removeDownloads(downloads);
-    } else if (alarm.name.startsWith("url-")) {
+    } else if (name.startsWith("url-")) {
       // Download from previous session, only URL
-      const downloadUrl = alarm.name.substring(4);
+      const downloadUrl = name.substring(4);
       removeHistoryEntry(downloadUrl);
     }
   }
 
   /** Fully remove passed array of `Downloads.DownloadItem` from history */
-  function removeDownloads(downloads: browser.downloads.DownloadItem[]) {
+  function removeDownloads(
+    downloads: readonly browser.downloads.DownloadItem[]
+  ) {
     if (!settings.removeAfterDelay) {
       return;
     }
@@ -216,7 +221,7 @@ interface IDownloadInfo {
   }
 
   /** Remove URLs from history */
-  function removeHistoryEntries(urls: string[]) {
+  function removeHistoryEntries(urls: readonly string[]) {
     for (const url of urls) {
       try {
         browser.history.deleteUrl({ url });
