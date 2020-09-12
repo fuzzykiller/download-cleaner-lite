@@ -8,7 +8,7 @@
     "64": "Icon64.png"
   },
 
-  "version": "2.0",
+  "version": "2.1",
 
   "background": {
     "scripts": ["lib/options.js", "main.js"]
