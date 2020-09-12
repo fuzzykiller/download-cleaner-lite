@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Daniel Betz
+Copyright 2020 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ interface IAlarmName {
 
 (() => {
   const downloadsToRemoveKey = "downloadsToRemove";
+  const isUpdatingKey = "isUpdating";
   const trackedDownloadsByUrl = new Map<string, IDownloadInfo>();
   const trackedDownloadsById = new Map<number, IDownloadInfo>();
 
@@ -97,20 +98,29 @@ interface IAlarmName {
 
   /** Initialize extension */
   async function main() {
+    browser.runtime.onUpdateAvailable.addListener(onUpdating);
     browser.downloads.onCreated.addListener(onDownloadCreated);
     browser.downloads.onChanged.addListener(onDownloadChanged);
     browser.alarms.onAlarm.addListener(onAlarm);
 
     const result = await loadSettings();
+    await browser.storage.local.set({ [isUpdatingKey]: false });
+
+    const isUpdating = result[isUpdatingKey] as boolean | undefined;
     const downloadsToRemoveString = result[downloadsToRemoveKey];
+
     if (typeof downloadsToRemoveString === "string") {
       const downloadInfos = JSON.parse(
         downloadsToRemoveString
       ) as readonly IDownloadInfo[];
 
       if (settings.removeAtStartup) {
-        removeHistoryEntries(downloadInfos.map((x) => x.url));
-        browser.storage.local.remove(downloadsToRemoveKey);
+        if (!isUpdating) {
+          removeHistoryEntries(downloadInfos.map((x) => x.url));
+          browser.storage.local.remove(downloadsToRemoveKey);
+        } else {
+          reregisterOldDownloads(downloadInfos);
+        }
       } else if (settings.removeAfterDelay) {
         reregisterOldDownloads(downloadInfos);
       } else {
@@ -119,7 +129,7 @@ interface IAlarmName {
     }
   }
 
-  /** Create removal timers for downloads from previous sessions */
+  /** Add downloads from previous session; set timers if enabled */
   function reregisterOldDownloads(downloads: readonly IDownloadInfo[]) {
     const removalDelayInMilliseconds = settings.removalDelayInMinutes * 60000;
     const now = Date.now();
@@ -128,16 +138,20 @@ interface IAlarmName {
 
     for (const download of downloads) {
       const dueTime = download.time + removalDelayInMilliseconds;
-      if (dueTime < now) {
+      if (settings.removeAfterDelay && dueTime < now) {
         // Already due
         urlsToRemove.push(download.url);
       } else {
-        // Due in future
-        const minutesUntilDue = (dueTime - now) / 60000;
+        // Due in future or at next startup
         trackedDownloadsByUrl.set(download.url, download);
-        browser.alarms.create(`url-${download.url}`, {
-          delayInMinutes: minutesUntilDue,
-        });
+
+        if (settings.removeAfterDelay) {
+          // Due in future
+          const minutesUntilDue = (dueTime - now) / 60000;
+          browser.alarms.create(`url-${download.url}`, {
+            delayInMinutes: minutesUntilDue,
+          });
+        }
       }
     }
 
@@ -145,6 +159,13 @@ interface IAlarmName {
     removeHistoryEntries(urlsToRemove);
 
     updateTrackedDownloadsStore();
+  }
+
+  /** Set flag to not execute startup removal when updating */
+  function onUpdating() {
+    browser.storage.local.set({ [isUpdatingKey]: true }).then(() => {
+      browser.runtime.reload();
+    });
   }
 
   /** Create removal timer/registration for new downloads */
