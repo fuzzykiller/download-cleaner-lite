@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
+    "pack": "rm -f download-cleaner-lite.zip && cat files_to_zip.txt | zip -@ download-cleaner-lite.zip",
     "lint": "tslint -c tslint.json *.ts lib/*.ts",
     "lint:format": "prettier --check *.ts lib/*.ts *.html *.json",
     "format": "prettier --write *.ts lib/*.ts *.html *.json"
