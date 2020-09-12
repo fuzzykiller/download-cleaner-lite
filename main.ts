@@ -109,7 +109,7 @@ interface IAlarmName {
       ) as readonly IDownloadInfo[];
 
       if (settings.removeAtStartup) {
-        removeHistoryEntries(downloadInfos.map(x => x.url));
+        removeHistoryEntries(downloadInfos.map((x) => x.url));
         browser.storage.local.remove(downloadsToRemoveKey);
       } else if (settings.removeAfterDelay) {
         reregisterOldDownloads(downloadInfos);
