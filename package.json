@@ -10,10 +10,10 @@
     "format": "prettier --write *.ts lib/*.ts *.html *.json"
   },
   "devDependencies": {
-    "prettier": "2.1.1",
+    "prettier": "2.8.1",
     "tslint": "^6.1.3",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^4.0.2",
+    "typescript": "^4.9.4",
     "web-ext-types": "^3.2.1"
   },
   "prettier": {
