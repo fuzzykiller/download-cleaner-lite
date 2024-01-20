@@ -5,16 +5,17 @@
   "scripts": {
     "build": "tsc",
     "pack": "rm -f download-cleaner-lite.zip && cat files_to_zip.txt | zip -@ download-cleaner-lite.zip",
-    "lint": "tslint -c tslint.json *.ts lib/*.ts",
+    "lint": "eslint lib/*.ts *.ts",
     "lint:format": "prettier --check *.ts lib/*.ts *.html *.json",
     "format": "prettier --write *.ts lib/*.ts *.html *.json"
   },
   "devDependencies": {
-    "prettier": "2.8.1",
-    "tslint": "^6.1.3",
-    "tslint-config-prettier": "^1.18.0",
-    "typescript": "^4.9.4",
-    "web-ext-types": "^3.2.1"
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "prettier": "3.2.4",
+    "typescript": "5.3.3",
+    "web-ext-types": "3.2.1"
   },
   "prettier": {
     "trailingComma": "es5",
