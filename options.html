@@ -7,12 +7,16 @@
       html,
       body {
         margin: 0;
-        height: 100vh;
+        box-sizing: border-box;
       }
 
       body {
         font: message-box;
         font-size: 1.25em;
+      }
+
+      p.section-title {
+        margin-bottom: 5px;
       }
 
       div {
@@ -48,6 +52,7 @@
     </style>
   </head>
   <body>
+    <p class="section-title">When to remove:</p>
     <div>
       <label>
         <input type="checkbox" id="delayEnabledInput" /> Remove downloads after
@@ -74,17 +79,31 @@
         downloads when starting Firefox.
       </label>
     </div>
+
+    <p class="section-title">What to remove:</p>
     <div>
       <label>
-        <input type="checkbox" id="removeInterruptedEnabledInput" /> Consider
-        interrupted (failed) downloads complete.
+        <input type="checkbox" checked disabled /> Remove completed downloads.
+        (Always active)
+      </label>
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" id="removeInterruptedEnabledInput" /> Remove
+        interrupted (failed) downloads. (Except user-canceled)
+      </label>
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" id="removeCanceledEnabledInput" /> Remove
+        user-canceled downloads.
       </label>
     </div>
 
-    <div>
+    <p>
       <strong>Important:</strong> Download Cleaner Lite cannot remove historical
       downloads.
-    </div>
+    </p>
 
     <script type="text/javascript" src="lib/options.js"></script>
     <script type="text/javascript" src="options.js"></script>

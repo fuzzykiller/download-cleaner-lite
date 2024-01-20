@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Daniel Betz
+Copyright 2024 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -226,8 +226,21 @@ interface IAlarmName {
         continue;
       }
 
-      // Skip interrupted downloads unless option enabled
-      if (download.state === "interrupted" && !settings.removeInterrupted) {
+      // Skip interrupted downloads unless option enabled - canceled handled separately
+      if (
+        download.state === "interrupted" &&
+        download.error !== "USER_CANCELED" &&
+        !settings.removeInterrupted
+      ) {
+        continue;
+      }
+
+      // Skip canceled downloads unless option enabled
+      if (
+        download.state === "interrupted" &&
+        download.error === "USER_CANCELED" &&
+        !settings.removeCanceled
+      ) {
         continue;
       }
 

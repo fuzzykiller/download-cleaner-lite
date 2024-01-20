@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Daniel Betz
+Copyright 2024 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,9 @@ limitations under the License.
   );
   const removeInterruptedEnabledCheckbox = byId<HTMLInputElement>(
     "removeInterruptedEnabledInput"
+  );
+  const removeCanceledEnabledCheckbox = byId<HTMLInputElement>(
+    "removeCanceledEnabledInput"
   );
 
   let settingsChanging = false;
@@ -63,12 +66,21 @@ limitations under the License.
     });
   });
 
+  onUserChange(removeCanceledEnabledCheckbox, () => {
+    browser.storage.local.set({
+      [removeCanceledKey]: JSON.stringify(
+        removeCanceledEnabledCheckbox.checked
+      ),
+    });
+  });
+
   function onSettingsChanged() {
     settingsChanging = true;
     delayInputField.value = `${settings.removalDelayInMinutes}`;
     delayEnabledCheckbox.checked = settings.removeAfterDelay;
     removeAtStartEnabledCheckbox.checked = settings.removeAtStartup;
     removeInterruptedEnabledCheckbox.checked = settings.removeInterrupted;
+    removeCanceledEnabledCheckbox.checked = settings.removeCanceled;
 
     delayInputField.disabled = !settings.removeAfterDelay;
     delayInputLabel.className = !settings.removeAfterDelay ? "disabled" : "";

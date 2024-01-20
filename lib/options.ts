@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Daniel Betz
+Copyright 2024 Daniel Betz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,12 +18,14 @@ const removeAtStartupKey = "removeAtStartup";
 const removeAfterDelayKey = "removeAfterDelay";
 const removalDelayKey = "removalDelayInMinutes";
 const removeInterruptedKey = "removeInterrupted";
+const removeCanceledKey = "removeCanceled";
 
 const settings = {
   [removalDelayKey]: 1,
   [removeAfterDelayKey]: true,
   [removeAtStartupKey]: false,
   [removeInterruptedKey]: true,
+  [removeCanceledKey]: true,
 };
 
 type Settings = typeof settings;
