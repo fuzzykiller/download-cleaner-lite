@@ -20,18 +20,13 @@ const removalDelayKey = "removalDelayInMinutes";
 const removeInterruptedKey = "removeInterrupted";
 
 const settings = {
-  removalDelayInMinutes: 1,
-  removeAfterDelay: true,
-  removeAtStartup: false,
-  removeInterrupted: true,
+  [removalDelayKey]: 1,
+  [removeAfterDelayKey]: true,
+  [removeAtStartupKey]: false,
+  [removeInterruptedKey]: true,
 };
 
 type Settings = typeof settings;
-
-/** Create object with single key, suitable for `Storage.set()` */
-function kvp<K extends string>(key: K, value: string): Record<K, string> {
-  return { [key]: value } as Record<K, string>;
-}
 
 /** Load settings and/or set default values
  *
@@ -70,7 +65,7 @@ async function loadSettings(changedCallback?: () => void) {
     if (typeof value === "string") {
       set(key, JSON.parse(value));
     } else {
-      browser.storage.local.set(kvp(key, JSON.stringify(settings[key])));
+      browser.storage.local.set({ [key]: JSON.stringify(settings[key]) });
     }
   }
   return result;

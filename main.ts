@@ -93,7 +93,7 @@ interface IAlarmName {
   function updateTrackedDownloadsStore() {
     const downloadsByUrlValues = [...trackedDownloadsByUrl.values()];
     const serializedList = JSON.stringify(downloadsByUrlValues);
-    browser.storage.local.set(kvp(downloadsToRemoveKey, serializedList));
+    browser.storage.local.set({ [downloadsToRemoveKey]: serializedList });
   }
 
   /** Initialize extension */

@@ -38,31 +38,29 @@ limitations under the License.
   onUserChange(delayInputField, () => {
     const delay = Math.floor(Math.max(0, +delayInputField.value));
 
-    browser.storage.local.set(kvp(removalDelayKey, JSON.stringify(delay)));
+    browser.storage.local.set({ [removalDelayKey]: JSON.stringify(delay) });
   });
 
   onUserChange(delayEnabledCheckbox, () => {
-    browser.storage.local.set(
-      kvp(removeAfterDelayKey, JSON.stringify(delayEnabledCheckbox.checked))
-    );
+    browser.storage.local.set({
+      [removeAfterDelayKey]: JSON.stringify(delayEnabledCheckbox.checked),
+    });
   });
 
   onUserChange(removeAtStartEnabledCheckbox, () => {
-    browser.storage.local.set(
-      kvp(
-        removeAtStartupKey,
-        JSON.stringify(removeAtStartEnabledCheckbox.checked)
-      )
-    );
+    browser.storage.local.set({
+      [removeAtStartupKey]: JSON.stringify(
+        removeAtStartEnabledCheckbox.checked
+      ),
+    });
   });
 
   onUserChange(removeInterruptedEnabledCheckbox, () => {
-    browser.storage.local.set(
-      kvp(
-        removeInterruptedKey,
-        JSON.stringify(removeInterruptedEnabledCheckbox.checked)
-      )
-    );
+    browser.storage.local.set({
+      [removeInterruptedKey]: JSON.stringify(
+        removeInterruptedEnabledCheckbox.checked
+      ),
+    });
   });
 
   function onSettingsChanged() {
