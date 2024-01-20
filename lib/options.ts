@@ -30,7 +30,8 @@ const settings = {
 
 type Settings = typeof settings;
 
-/** Load settings and/or set default values
+/**
+ * Load settings and/or set default values
  *
  * @returns Raw local storage contents
  */

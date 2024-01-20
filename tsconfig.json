@@ -15,8 +15,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
 
-    "typeRoots": ["node_modules/@types", "node_modules/web-ext-types"]
+    "typeRoots": ["node_modules/@types", "node_modules/web-ext-types"],
   },
 
-  "include": ["lib/options.ts", "main.ts", "options.ts"]
+  "include": ["lib/options.ts", "main.ts", "options.ts"],
 }
